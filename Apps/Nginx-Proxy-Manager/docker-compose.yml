@@ -55,12 +55,12 @@ x-casaos:
   index: /                  # 首页相对路径（如 /login 或 /#index）
 
   # --- 3. AppStore 视觉与多语言配置 ---
-  icon: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/icon.png             # 应用图标 URL（透明背景 PNG）
-  thumbnail: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/thumbnail.png   # 商店展示大图/截图
+  icon: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/Nginx-Proxy-Manager/icon.png             # 应用图标 URL（透明背景 PNG）
+  thumbnail: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/Nginx-Proxy-Manager/thumbnail.png   # 商店展示大图/截图
   screenshot_link:                      #前端截图
-    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/screenshot-1.jpg
-    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/screenshot-2.jpg
-    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/screenshot-3.jpg
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/Nginx-Proxy-Manager/screenshot-1.jpg
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/Nginx-Proxy-Manager/screenshot-2.jpg
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/Nginx-Proxy-Manager/screenshot-3.jpg
   category: Utilities                    # 商店分类（如 Media, Storage, Utilities 等）
   author: AjianNie                       # 模板打包/维护者姓名
   developer: jc21                # 原生软件开发团队名称

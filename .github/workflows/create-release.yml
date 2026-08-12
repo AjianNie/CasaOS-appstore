@@ -1,0 +1,54 @@
+name: Create Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    paths:
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/*.json'
+      - 'Tools/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build AppStore distribution
+        uses: IceWhaleTech/build-appstore-action@v1
+        with:
+          source: .
+          output: dist
+          base-url: https://github.com/AjianNie/CasaOS-appstore/releases/download/new
+
+      - name: Package AppStore
+        run: |
+          cp Tools/index.html dist/
+          cd dist
+          zip -r ../AppStore.zip .
+
+      - name: Delete previous latest release
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: new
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: AppStore.zip
+          tag_name: new
+          name: Latest
+          draft: false
+          prerelease: false
+          body: Generated from the latest commit.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

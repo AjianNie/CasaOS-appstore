@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "store_id": "ajian-appstore",
+  "name": {
+    "en_US": "Ajian AppStore",
+    "zh_CN": "Ajian 应用商店"
+  },
+  "description": {
+    "en_US": "Ajian AppStore, play with Docker. Get things done.",
+    "zh_CN": "Ajian 应用商店，用 Docker 玩出生产力。"
+  },
+  "maintainer": "AjianNie",
+  "url": "https://github.com/AjianNie/CasaOS-appstore"
+}
