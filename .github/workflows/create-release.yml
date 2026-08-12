@@ -36,10 +36,14 @@ jobs:
           zip -r ../AppStore.zip .
 
       - name: Delete previous latest release
-        uses: dev-drprasad/delete-tag-and-release@v1.1
-        with:
-          tag_name: new
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view new >/dev/null 2>&1; then
+            gh release delete new --yes --cleanup-tag
+          elif git ls-remote --exit-code --tags origin refs/tags/new >/dev/null 2>&1; then
+            git push origin :refs/tags/new
+          fi
 
       - name: Publish latest release
         uses: softprops/action-gh-release@v2
