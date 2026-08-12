@@ -44,6 +44,7 @@ networks:
 
 x-casaos:
   # --- 1. 架构与服务映射 (核心) ---
+  id: com.ajiannie.nginx-proxy-manager  #反向域名, 不要求真实注册域名。只要是稳定、唯一、符合反向域名格式即可
   architectures:            # 支持的硬件架构，如 ["amd64", "arm64", "arm-7"]
     - amd64
     - arm64
