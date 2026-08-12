@@ -1,0 +1,108 @@
+name: npm-web
+services:
+  npm-web:
+    container_name: npm-web
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      # - '81:81' # 网页后台管理端口,无法通过ip:端口访问,如需恢复请取消注释并docker compose up -d,与下面81端口二选一, 下面的方案更合适, 兼顾安全和便捷.
+      - '127.0.0.1:81:81' # 仅允许本机或 SSH 隧道访问, 本地通过 ssh -L 8181:127.0.0.1:81 user@your_server_ip 登录ssh并保持终端窗口开启,http://127.0.0.1:8181, 即可直接进入 Nginx Proxy Manager 管理后台。
+      # Add any other Stream port you want to expose
+      - '21:21' # FTP
+
+    environment:
+      TZ: "Asia/Shanghai"
+
+      # Uncomment this if you want to change the location of
+      # the SQLite DB file within the container
+      # DB_SQLITE_FILE: "/data/database.sqlite"
+
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512m
+          pids: 500
+
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    name: proxy # 自动创建并固定名称为 proxy
+
+x-casaos:
+  # --- 1. 架构与服务映射 (核心) ---
+  architectures:            # 支持的硬件架构，如 ["amd64", "arm64", "arm-7"]
+    - amd64
+    - arm64
+  main: npm-web                 # 【必填】"主页",指定 services: 列表中作为 Web UI 入口的服务名称,而非容器名称; 具体指`servers:`的下一行,一般会默认写为app,注意统一
+
+  # --- 2. Web 界面与网络跳转 ---
+  port_map: "81"          # 面板中点击图标跳转的宿主机端口
+  scheme: http              # 访问协议：http 或 https
+  index: /                  # 首页相对路径（如 /login 或 /#index）
+
+  # --- 3. AppStore 视觉与多语言配置 ---
+  icon: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/icon.png             # 应用图标 URL（透明背景 PNG）
+  thumbnail: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/thumbnail.png   # 商店展示大图/截图
+  screenshot_link:                      #前端截图
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/screenshot-1.jpg
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/screenshot-2.jpg
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@main/Apps/Nginx-Proxy-Manager/screenshot-3.jpg
+  category: Utilities                    # 商店分类（如 Media, Storage, Utilities 等）
+  author: AjianNie                       # 模板打包/维护者姓名
+  developer: jc21                # 原生软件开发团队名称
+
+  # 多语言标题与描述（支持多国语言代码）
+  title:
+    en_us: Nginx Proxy Manager
+    #zh_cn: 应用中文名称
+  tagline:
+    #en_us: One-line summary
+    zh_cn: 反向代理 Nginx 的 Web GUI
+  description:
+    #en_us: Docker container for managing Nginx proxy hosts with a simple, powerful interface
+    zh_cn: 用于管理 Nginx 代理主机的 Docker 容器，提供简单而强大的界面
+
+  # --- 4. 用户交互与安装提示 ---
+  tips:
+    before_install:
+      #en_us: |
+      zh_cn: |
+        ### 1. CloudFlare 添加DNS解析
+
+        - 路径: 域名-概况-添加域名-连接域名
+        - DNS记录: 添加记录-类型A, 分别添加根域名(直接填入@或根域名) 和 泛域名(\*.根域名)
+        - 等待一会即可完成根域名的DNS解析, 可以直接通过域名访问Nginx Proxy Manager管理页面
+        
+        ### 2. Nginx Proxy Manager泛域名解析
+        
+        - 在CloudFlare获取API令牌, 用于Nginx Proxy Manager的证书管理(顶栏Certificates): 概述-API-获取您的API密钥-创建令牌-API 令牌模板-编辑区域 DNS-使用模版-区域资源-所有区域-继续-复制生成的 **只会显示一次** 的API令牌(也称token)
+        - Nginx Proxy Manager中前往 `Add Certificate`-`Let's Encrypt via DNS`- `Domain Names`- `DNS Provider` - `Cloudflare` -  `Credentials File Content` 填入 API令牌(token) - `Save` 
+        - 之后, `Hosts` - `Add Proxy Host` - `Domain Names` - `Edit Proxy Host` - `SSL` - `SSL Certificate` , 选择上面添加的域名证书即可
+        
+        ### 3. 注意事项
+        
+        - Forward Hostname / IP: 本机其他docker容器使用Nginx Proxy Manager的反向代理服务时, 需要在 `Edit Proxy Host` - `Forward Hostname / IP` 中添加为 ++当前服务所在服务器的**局域网 IP**（例如++ `192.168.x.x` ++或 Docker 容器名/网段 IP）++或者 `127.0.0.1`++（如果在同一网络栈）++, 其中容器名称是最直接最方便不会出错的, 但应当在部署容器时习惯性自定义容器名实现固定效果, 避免后续重建或更新容器导致名称更改
+        - Docker 的端口映射语法:   
+         - '80:80'  
+        前后的端口分别代表：`宿主机端口 : 容器内部端口`;   
+        - 前面的端口（宿主机/Host 端口）： 外部网络或你在浏览器里直接访问服务器 IP 时输入的端口（例如 http://&lt;服务器IP&gt;:80）。  
+        - 后面的端口（容器内部/Container 端口）： 容器里面运行的服务（如 Nginx）实际监听的端口。
+        - 端口占用”（或端口冲突）: 指的是宿主机端口（Host Port，即前面的端口）被占用。  
+        - 只需修改 前面的端口（宿主机端口） 即可  
+        - 容器间相同的内部端口不会冲突, 因为docker网络架构是网络隔离环境
+        - Forward Port: Nginx Proxy Manager的端口转发是内部端口(容器端口), 而非外部(宿主)
+        
