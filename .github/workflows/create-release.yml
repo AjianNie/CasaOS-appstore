@@ -31,9 +31,22 @@ jobs:
 
       - name: Package AppStore
         run: |
+          mkdir -p legacy/Apps
+          cp *.json legacy/
+          find Apps -type f -name 'docker-compose.yml' -exec sh -c '
+            for file do
+              target="legacy/$file"
+              mkdir -p "$(dirname "$target")"
+              cp "$file" "$target"
+            done
+          ' sh {} +
+          cd legacy
+          zip -r ../AppStore.zip .
+          cd ..
+
           cp Tools/index.html dist/
           cd dist
-          zip -r ../AppStore.zip .
+          zip -r ../dist.zip .
 
       - name: Delete previous latest release
         env:
@@ -48,7 +61,9 @@ jobs:
       - name: Publish latest release
         uses: softprops/action-gh-release@v2
         with:
-          files: AppStore.zip
+          files: |
+            AppStore.zip
+            dist.zip
           tag_name: new
           name: Latest
           draft: false
