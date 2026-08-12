@@ -80,7 +80,7 @@ x-casaos:
   # --- 4. 用户交互与安装提示 ---
   tips:
     before_install:
-      #en_us: |
+      en_us: |
         ### 1. CloudFlare 添加DNS解析
 
         - 路径: 域名-概况-添加域名-连接域名
