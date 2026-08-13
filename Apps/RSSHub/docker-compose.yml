@@ -1,0 +1,107 @@
+services:
+  RSSHub:
+    # two ways to enable Playwright:
+    # * comment out marked lines, then use this image instead: diygod/rsshub:chromium-bundled
+    # * (consumes more disk space and memory) leave everything unchanged
+    container_name: RSSHub
+    image: 'diygod/rsshub:chromium-bundled:latest'
+    restart: unless-stopped
+    ports:
+       - '127.0.0.1:1200:1200'
+    environment:
+      ACCESS_KEY: ''    #用法链接中添加"?key=xxx&其他参数"
+      NODE_ENV: production
+
+      GITHUB_ACCESS_TOKEN: ''
+      TWITTER_AUTH_TOKEN: ''
+      BILIBILI_COOKIE_431893013: ""
+      CACHE_TYPE: redis
+      REDIS_URL: 'redis://redis:6379/'
+        # PLAYWRIGHT_WS_ENDPOINT: 'ws://browserless:3000' # marked
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:1200/healthz?key=${ACCESS_KEY}']
+      interval: 60s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - redis
+        # - browserless # marked
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512m
+          pids: 500
+
+    networks:
+      - proxy
+
+#  browserless: # marked
+#    image: browserless/chrome # marked
+#    restart: always # marked
+#    ulimits: # marked
+#      core: # marked
+#        hard: 0 # marked
+#        soft: 0 # marked
+#    healthcheck: # marked
+#      test: ['CMD', 'curl', '-f', 'http://localhost:3000/pressure'] # marked
+#      interval: 30s # marked
+#      timeout: 10s # marked
+#      retries: 3 # marked
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - /DATA/AppData/rsshub/data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+
+
+x-casaos:
+  # --- 1. 架构与服务映射 (核心) ---
+  id: com.ajiannie.rsshub  #反向域名, 不要求真实注册域名。只要是稳定、唯一、符合反向域名格式即可
+  architectures:            # 支持的硬件架构，如 ["amd64", "arm64", "arm-7"]
+    - amd64
+    - arm64
+  main: RSSHub                 # 【必填】"主页",指定 services: 列表中作为 Web UI 入口的服务名称,而非容器名称; 具体指`servers:`的下一行,一般会默认写为app,注意统一
+
+  # --- 2. Web 界面与网络跳转 ---
+  port_map: "1200"          # 面板中点击图标跳转的宿主机端口
+  scheme: http              # 访问协议：http 或 https
+  index: /                  # 首页相对路径（如 /login 或 /#index）
+
+  # --- 3. AppStore 视觉与多语言配置 ---
+  icon: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/RSSHub/icon.png             # 应用图标 URL（透明背景 PNG）
+  thumbnail: https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/RSSHub/thumbnail.png   # 商店展示大图/截图
+  screenshot_link:                      #前端截图
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/RSSHub/screenshot-1.jpg
+    - https://cdn.jsdelivr.net/gh/AjianNie/CasaOS-appstore@master/Apps/RSSHub/screenshot-2.jpg
+  category: Utilities                    # 商店分类（如 Media, Storage, Utilities 等）
+  author: AjianNie                       # 模板打包/维护者姓名
+  developer: DIYGod                # 原生软件开发团队名称
+
+  # 多语言标题与描述（支持多国语言代码）
+  title:
+    en_us: RSSHub
+    zh_cn: RSSHub
+  tagline:
+    en_us: 万物皆可RSS
+    zh_cn: 万物皆可RSS
+  description:
+    en_us: 世界上最大的 RSS 网络, 开箱即用, 可扩展
+    zh_cn: 世界上最大的 RSS 网络, 开箱即用, 可扩展
+
+  # --- 4. 用户交互与安装提示 ---
+  tips:
+    before_install:
+      en_us: |
+        * 账号相关的环境变量存放位置: iCloud备忘录, 自建服务/RSSHub环境变量
+
+      zh_cn: |
+        * 账号相关的环境变量存放位置: iCloud备忘录, 自建服务/RSSHub环境变量
