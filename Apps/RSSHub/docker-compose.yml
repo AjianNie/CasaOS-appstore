@@ -1,3 +1,4 @@
+name: RSSHub
 services:
   RSSHub:
     # two ways to enable Playwright:
